@@ -27,7 +27,31 @@
 import { open, readdir, readFile, rename, rm, stat } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { zstdDecompressSync } from 'node:zlib'
-import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
+
+/**
+ * Failure carrying a stable code to the Client.
+ *
+ * This deliberately mirrors the shape of `PurgeError` from
+ * `@deepseek-ai/dsh-typert-protocol` (`code` + `details`) without importing that
+ * package. This plugin reaches the Host over a plain fetch route, never through
+ * the Typert gateway, so it has no reason to depend on a DSH-internal package:
+ * doing so makes the import fail outright whenever the profile does not hoist
+ * that package, which is exactly what happened after moving the version
+ * declaration from `peerDependencies` to `engines.dsh`.
+ */
+export class PurgeError extends Error {
+  /**
+   * @param {string} code - stable failure code read by the Client.
+   * @param {string} message - human diagnostic.
+   * @param {Record<string, unknown>} [details] - structured payload.
+   */
+  constructor(code, message, details = {}) {
+    super(message)
+    this.name = 'PurgeError'
+    this.code = code
+    this.details = details
+  }
+}
 
 /** Route of the purge/sweep endpoint, behind the same authentication as every Host API. */
 export const PURGE_PATH = '/api/session.purgeArchived'
@@ -615,7 +639,7 @@ export async function retireAgent(ctx, sessionId, options = {}) {
  */
 export async function purgeSession(ctx, sessionId) {
   const registry = ctx.get('workspaceRegistry')
-  if (registry === undefined) throw new RemoteError('archived-sessions/unavailable', 'the workspace registry is not mounted', {})
+  if (registry === undefined) throw new PurgeError('archived-sessions/unavailable', 'the workspace registry is not mounted', {})
 
   // Permanent deletion is only ever reachable from the archive list. Guarding the
   // mount point keeps a stale page, a bookmarked request, or a retry from tearing
@@ -625,7 +649,7 @@ export async function purgeSession(ctx, sessionId) {
   // subagent session is not archivable in the first place — the sidebar hides it
   // — so requiring it to be archived would make every parent purge fail.
   if (!(registry.archivedSessionIds ?? []).includes(sessionId)) {
-    throw new RemoteError('archived-sessions/not-archived', `cannot purge "${sessionId}": it is not archived`, { sessionId })
+    throw new PurgeError('archived-sessions/not-archived', `cannot purge "${sessionId}": it is not archived`, { sessionId })
   }
 
   // Collect before deleting: the walk reads each child's header off disk, and a
@@ -704,7 +728,7 @@ async function purgeOneSession(ctx, registry, sessionId) {
         }
         return { deleted: false, sessionId, pending, removedLog: false, bytes: 0, reason: 'busy' }
       }
-      throw new RemoteError('archived-sessions/purge-failed', `could not remove the session log: ${String(error)}`, {})
+      throw new PurgeError('archived-sessions/purge-failed', `could not remove the session log: ${String(error)}`, {})
     }
   }
 
@@ -745,19 +769,6 @@ async function purgeOneSession(ctx, registry, sessionId) {
     retiredAgent: retirement.retired,
     ...retirement.retired || retirement.reason === undefined ? {} : { retirementReason: retirement.reason },
     bytes: located?.bytes ?? 0,
-  }
-}
-
-/**
- * Read one pending Remote (unused at runtime; kept for controller parity with
- * shipped controllers that expose `service.typertRemote`).
- */
-export class ArchivedSessionsController extends TypertRemoteService {
-  /**
-   * @param {import('@deepseek-ai/cordis').Context} ctx - owning Host Context.
-   */
-  constructor(ctx) {
-    super(ctx, 'archivedSessionsController', { namespace: 'archivedSessions' })
   }
 }
 
@@ -972,7 +983,7 @@ export function apply(ctx) {
         const outcome = await purgeSession(ctx, sessionId)
         return json(200, outcome)
       } catch (error) {
-        const code = error instanceof RemoteError ? error.code : 'archived-sessions/purge-failed'
+        const code = error instanceof PurgeError ? error.code : 'archived-sessions/purge-failed'
         return json(500, { error: error instanceof Error ? error.message : String(error), code })
       }
     },

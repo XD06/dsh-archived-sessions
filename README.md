@@ -128,7 +128,17 @@ DSH evaluates this on every boot. When `engines.dsh` is present it decides **alo
 | `0.2.1-rc.2` … `0.2.9` | ✅ works |
 | `0.3.0` and later | ⛔ refused until re-validated |
 
-When DSH reaches `0.3.0`, bump the upper bound **after** re-checking the APIs this plugin relies on (`Remote`, `RemoteError`, `TypertRemoteService`).
+When DSH reaches `0.3.0`, bump the upper bound **after** re-checking the APIs this plugin relies on. It currently imports **nothing** from DSH internals — see below.
+
+### Zero dependencies
+
+`host.js` imports only Node builtins (`node:fs/promises`, `node:path`, `node:zlib`). It deliberately does **not** import `@deepseek-ai/dsh-typert-protocol`, because:
+
+- the plugin reaches the Host over a plain fetch route, never through the Typert gateway;
+- the `Remote` / `TypertRemoteService` exports were never used;
+- a `peerDependencies` entry is also an **install contract** — dropping it made pnpm remove the package, and the import then failed with `ERR_MODULE_NOT_FOUND`.
+
+Failures carry a local `PurgeError` with the same `code` + `details` shape the Client reads. This keeps the plugin loadable from any directory, under any profile, with no `node_modules`.
 
 ---
 

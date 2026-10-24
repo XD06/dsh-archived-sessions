@@ -96,6 +96,54 @@ evaluatePluginCompatibility(manifest, {}, '0.2.1-rc.3')  // undefined = 通过
 **生效方式**：`loadProfileDirectory` 每次启动都重新读 manifest 现算，**没有缓存**。
 所以改完 manifest **重启 DSH 即可**，不需要卸载重装。
 
+### ⚠️ 改完版本声明后的连带故障：包被 pnpm 卸掉了
+
+把 `peerDependencies` 换成 `engines.dsh` 之后，**pnpm 会把那个包从 profile 里移除**
+——因为 `peerDependencies` 是 pnpm 的安装依据，`engines` 不是。
+
+于是 Host 半边启动时报：
+
+```
+启用失败：dsh: warning: 1 entry did not activate archived-sessions
+(@local/dsh-archived-sessions): failed to import:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package
+'@deepseek-ai/dsh-typert-protocol' imported from ...\archived-sessions\host.js
+```
+
+**教训**：`peerDependencies` 一旦写过，就不只是"版本声明"，它同时是**安装契约**。
+移除它等于让运行时 import 悬空。
+
+**根治法：能不用 DSH 内部包就别用。**
+
+这个插件走的是 `connection.fetch.register` 的 HTTP 路由，**根本不经过 Typert 网关**，
+却为了一个 `RemoteError` 而依赖 `@deepseek-ai/dsh-typert-protocol`——纯属历史包袱。
+而那个包导出的 `Remote` 和 `TypertRemoteService` 在本插件里**从未被使用**
+（`ArchivedSessionsController` 定义了但没有任何地方 `ctx.plugin()` 它）。
+
+现在改成本地实现：
+
+```js
+export class PurgeError extends Error {
+  constructor(code, message, details = {}) {
+    super(message)
+    this.name = 'PurgeError'
+    this.code = code
+    this.details = details
+  }
+}
+```
+
+Client 端只读 `body.code` 这个字符串，形状对齐即可，**不需要真的 instanceof 那个类**。
+
+结果：`host.js` 现在**零外部依赖**，任意目录、任意 profile 都能加载：
+
+```bash
+node -e "import('./host.js').then(m => console.log(Object.keys(m).length, 'exports OK'))"
+```
+
+**通用原则**：插件里每一个 `import '@deepseek-ai/...'` 都是一个会随 DSH 升级而断的耦合点。
+先问自己"这个符号我真的需要吗"，通常答案是"我只需要它携带的数据，不需要它的类型"。
+
 ### 读 app.asar 的正确姿势
 
 `app.asar` 是 Electron 的自定义容器，不是 zip。头部结构：
