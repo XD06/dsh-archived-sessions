@@ -88,55 +88,122 @@ window.__ModuleLoader__.load({
       childrenBusy: '{count} subagent session(s) were in use and were kept',
     }
 
+    /*
+     * Visual notes.
+     *
+     * DSH's `bg-layer-1/2/3` all resolve to the same value, so they cannot
+     * express depth. Every surface here therefore earns its separation from
+     * either `interactive-bg-hover` (a translucent tint that stacks correctly
+     * on any theme) or the `shadow-lv*` scale. Using the layered tokens as if
+     * they were an elevation ramp is what made the first version read flat.
+     *
+     * The palette stays inside DSH's aliases so light and dark both work: the
+     * theme runtime swaps tokens at the root, and nothing here hardcodes a
+     * colour except white on the destructive confirm, which is checked against
+     * the error red for AA.
+     */
+    const MONO = 'var(--dsw-font-markdown-code-font-family,var(--ds-font-family-code,ui-monospace,SFMono-Regular,Menlo,monospace))'
     const CSS = [
-      '.dsh-arch-root{display:flex;flex-direction:column;gap:16px;padding:8px 0;color:var(--dsw-alias-label-primary);font-size:13px;line-height:22px}',
-      '.dsh-arch-hint{display:flex;align-items:center;gap:6px;color:var(--dsw-alias-label-secondary);font-size:12px;line-height:18px}',
-      '.dsh-arch-hint svg{flex:none;opacity:.8}',
-      '.dsh-arch-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}',
-      '.dsh-arch-stats{display:flex;align-items:center;gap:14px;color:var(--dsw-alias-label-secondary);font-size:12px}',
-      '.dsh-arch-stat{display:inline-flex;align-items:center;gap:5px}',
-      '.dsh-arch-tools{display:flex;align-items:center;gap:8px}',
-      '.dsh-arch-tools svg{width:14px;height:14px}',
-      '.dsh-arch-btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:30px;padding:0 12px;border-radius:var(--dsw-radius-md);border:.5px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-primary);font:inherit;font-size:13px;line-height:20px;cursor:pointer;white-space:nowrap}',
-      '.dsh-arch-btn:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2)}',
+      // ---- scope: one place that defines the local ramp ----
+      '.dsh-arch-root{--arch-ease:cubic-bezier(.2,0,0,1);--arch-dur:140ms;--arch-hover:var(--dsw-alias-interactive-bg-hover);--arch-press:var(--dsw-alias-interactive-bg-active);--arch-line:var(--dsw-alias-border-l1);--arch-edge:var(--dsw-alias-border-l2);--arch-fg1:var(--dsw-alias-label-primary);--arch-fg2:var(--dsw-alias-label-secondary);--arch-fg3:var(--dsw-alias-label-secondary);--arch-danger:var(--dsw-alias-state-error-primary);display:flex;flex-direction:column;gap:18px;padding:4px 0 8px;color:var(--arch-fg1);font-size:13px;line-height:20px;-webkit-font-smoothing:antialiased}',
+
+      // ---- hint ----
+      '.dsh-arch-hint{display:flex;align-items:flex-start;gap:7px;color:var(--arch-fg3);font-size:12px;line-height:18px}',
+      '.dsh-arch-hint svg{flex:none;margin-top:2px;opacity:.8}',
+
+      // ---- summary bar ----
+      '.dsh-arch-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:28px}',
+      '.dsh-arch-stats{display:flex;align-items:center;gap:16px;color:var(--arch-fg3);font-size:12px;line-height:18px}',
+      '.dsh-arch-stat{display:inline-flex;align-items:center;gap:6px}',
+      '.dsh-arch-stat svg{opacity:.55}',
+      '.dsh-arch-tools{display:flex;align-items:center;gap:4px}',
+      '.dsh-arch-tools svg{width:13px;height:13px}',
+
+      // ---- text button: quiet until hovered, no permanent outline ----
+      '.dsh-arch-btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 10px;border-radius:var(--dsw-radius-sm);border:1px solid transparent;background:transparent;color:var(--arch-fg2);font:inherit;font-size:12px;line-height:18px;cursor:pointer;white-space:nowrap;transition:background var(--arch-dur) var(--arch-ease),color var(--arch-dur) var(--arch-ease),border-color var(--arch-dur) var(--arch-ease),transform var(--arch-dur) var(--arch-ease)}',
+      '.dsh-arch-btn:hover:not(:disabled){background:var(--arch-hover);color:var(--arch-fg1)}',
+      '.dsh-arch-btn:active:not(:disabled){background:var(--arch-press);transform:translateY(.5px)}',
       '.dsh-arch-btn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}',
-      '.dsh-arch-btn:disabled{opacity:.5;cursor:default}',
-      '.dsh-arch-btn[data-variant="danger"]{color:var(--dsw-alias-state-error-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 42%,transparent)}',
-      '.dsh-arch-btn[data-variant="danger"]:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 9%,transparent)}',
-      '.dsh-arch-groups{display:flex;flex-direction:column;gap:14px}',
-      '.dsh-arch-group{border:.5px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-xl);background:var(--dsw-alias-bg-layer-1);overflow:hidden}',
-      '.dsh-arch-group-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:.5px solid var(--dsw-alias-border-l1)}',
-      '.dsh-arch-group-icon{flex:none;display:flex;color:var(--dsw-alias-label-secondary)}',
-      '.dsh-arch-group-name{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsh-arch-group-meta{flex:1 1 auto;min-width:0;color:var(--dsw-alias-label-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsh-arch-badge{flex:none;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--dsw-alias-bg-layer-2);border:.5px solid var(--dsw-alias-border-l1);color:var(--dsw-alias-label-secondary);font-size:11px;line-height:19px;text-align:center}',
-      '.dsh-arch-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:.5px solid var(--dsw-alias-border-l1)}',
-      '.dsh-arch-row:first-of-type{border-top:none}',
-      '.dsh-arch-row:hover{background:var(--dsw-alias-bg-layer-2)}',
-      '.dsh-arch-row-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}',
-      '.dsh-arch-title{display:flex;align-items:center;gap:6px;font-size:13px;overflow:hidden}',
-      '.dsh-arch-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsh-arch-title[data-missing="true"] .dsh-arch-title-text{color:var(--dsw-alias-label-secondary);font-style:italic}',
-      '.dsh-arch-time{flex:none;color:var(--dsw-alias-label-tertiary,var(--dsw-alias-label-secondary));font-size:12px}',
-      '.dsh-arch-id{color:var(--dsw-alias-label-secondary);font-size:12px;font-family:var(--ds-font-family-code,monospace);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.75}',
-      '.dsh-arch-row-actions{flex:none;display:flex;align-items:center;gap:8px}',
-      '.dsh-arch-icon-btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:var(--dsw-radius-md);border:.5px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-secondary);cursor:pointer}',
-      '.dsh-arch-icon-btn:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}',
+      '.dsh-arch-btn:disabled{opacity:.4;cursor:default}',
+      '.dsh-arch-btn[data-variant="danger"]:hover:not(:disabled){background:color-mix(in srgb,var(--arch-danger) 8%,transparent);color:var(--arch-danger)}',
+
+      // ---- group card: real border + real shadow ----
+      '.dsh-arch-groups{display:flex;flex-direction:column;gap:12px}',
+      '.dsh-arch-group{border:1px solid var(--arch-edge);border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-1);box-shadow:var(--dsw-shadow-lv1);overflow:hidden}',
+      '.dsh-arch-group-head{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--arch-hover);border-bottom:1px solid var(--arch-line)}',
+      '.dsh-arch-group-icon{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:var(--dsw-radius-xs);background:var(--dsw-alias-bg-layer-1);border:1px solid var(--arch-line);color:var(--arch-fg3)}',
+      '.dsh-arch-group-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}',
+      '.dsh-arch-group-titlerow{display:flex;align-items:center;gap:8px;min-width:0}',
+      '.dsh-arch-group-name{flex:1 1 auto;min-width:0;font-size:13px;font-weight:600;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-count{flex:none;color:var(--arch-fg3);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
+      '.dsh-arch-group-subrow{display:flex;align-items:center;gap:8px;min-width:0}',
+      '.dsh-arch-group-path{flex:1 1 auto;min-width:0;font-family:' + MONO + ';font-size:11px;line-height:16px;color:var(--arch-fg3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-group-date{flex:none;color:var(--arch-fg3);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
+
+      // ---- rows ----
+      '.dsh-arch-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--arch-line);transition:background var(--arch-dur) var(--arch-ease)}',
+      '.dsh-arch-row:hover{background:var(--arch-hover)}',
+      '.dsh-arch-row-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}',
+      '.dsh-arch-title{display:flex;align-items:baseline;gap:8px;min-width:0}',
+      '.dsh-arch-title-text{font-size:13px;line-height:18px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-title[data-missing="true"] .dsh-arch-title-text{color:var(--arch-fg3);font-weight:400}',
+      '.dsh-arch-time{flex:none;color:var(--arch-fg3);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
+      // Session id: tertiary at 11px with the old `.65` opacity measured 2.18:1
+      // on white, well under AA. `label-secondary` at full opacity clears it in
+      // both themes (5.8:1 light, 6.9:1 dark) and the mono face keeps it quiet.
+      '.dsh-arch-id{font-family:' + MONO + ';font-size:11px;line-height:16px;color:var(--arch-fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+
+      // ---- icon buttons: no resting outline, they gain contrast on intent ----
+      '.dsh-arch-row-actions{flex:none;display:flex;align-items:center;gap:2px}',
+      '.dsh-arch-icon-btn{box-sizing:border-box;display:grid;place-items:center;width:28px;height:28px;padding:0;border:1px solid transparent;border-radius:var(--dsw-radius-sm);background:transparent;color:var(--arch-fg3);cursor:pointer;transition:background var(--arch-dur) var(--arch-ease),color var(--arch-dur) var(--arch-ease),opacity var(--arch-dur) var(--arch-ease),transform var(--arch-dur) var(--arch-ease)}',
+      '.dsh-arch-row:hover .dsh-arch-icon-btn:not(:disabled){color:var(--arch-fg2)}',
+      '.dsh-arch-icon-btn:hover:not(:disabled){background:var(--arch-press);color:var(--arch-fg1)}',
+      '.dsh-arch-icon-btn:active:not(:disabled){transform:translateY(.5px)}',
       '.dsh-arch-icon-btn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}',
-      '.dsh-arch-icon-btn:disabled{opacity:.45;cursor:default}',
-      '.dsh-arch-icon-btn[data-variant="danger"]{color:var(--dsw-alias-state-error-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 38%,transparent)}',
-      '.dsh-arch-icon-btn[data-variant="danger"]:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 9%,transparent);color:var(--dsw-alias-state-error-primary)}',
-      '.dsh-arch-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:36px 16px;color:var(--dsw-alias-label-secondary);border:.5px dashed var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-xl)}',
-      '.dsh-arch-status{display:flex;align-items:center;gap:6px;font-size:12px}',
-      '.dsh-arch-status[data-kind="error"]{color:var(--dsw-alias-state-error-primary)}',
-      '.dsh-arch-status[data-kind="notice"]{color:var(--dsw-alias-label-secondary)}',
-      '.dsh-arch-mask{position:fixed;inset:0;z-index:1100;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--dsw-alias-label-primary) 24%,transparent)}',
-      '.dsh-arch-dialog{box-sizing:border-box;width:min(420px,calc(100vw - 48px));border-radius:var(--dsw-radius-xl);background:var(--dsw-alias-bg-layer-2);border:.5px solid var(--dsw-alias-border-l1);padding:20px;display:flex;flex-direction:column;gap:12px}',
-      '.dsh-arch-dialog-head{display:flex;align-items:center;gap:8px}',
-      '.dsh-arch-dialog-head svg{color:var(--dsw-alias-state-error-primary)}',
-      '.dsh-arch-dialog-title{font-size:15px;font-weight:500}',
-      '.dsh-arch-dialog-desc{font-size:13px;line-height:20px;color:var(--dsw-alias-label-secondary)}',
-      '.dsh-arch-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}',
+      '.dsh-arch-icon-btn:disabled{opacity:.3;cursor:default}',
+      '.dsh-arch-icon-btn[data-variant="danger"]:hover:not(:disabled){background:color-mix(in srgb,var(--arch-danger) 9%,transparent);color:var(--arch-danger)}',
+
+      // ---- empty: composed, not a dashed placeholder ----
+      '.dsh-arch-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:44px 16px;color:var(--arch-fg3);text-align:center;border:1px solid var(--arch-line);border-radius:var(--dsw-radius-lg)}',
+      '.dsh-arch-empty svg{opacity:.32}',
+      '.dsh-arch-empty-title{font-size:13px;font-weight:500;line-height:18px;color:var(--arch-fg2)}',
+
+      // ---- status ----
+      '.dsh-arch-status{display:flex;align-items:flex-start;gap:7px;font-size:12px;line-height:18px;padding:8px 10px;border-radius:var(--dsw-radius-sm)}',
+      '.dsh-arch-status svg{flex:none;margin-top:2px}',
+      '.dsh-arch-status[data-kind="error"]{color:var(--arch-danger);background:color-mix(in srgb,var(--arch-danger) 7%,transparent)}',
+      '.dsh-arch-status[data-kind="notice"]{color:var(--arch-fg2);background:var(--arch-hover)}',
+
+      // ---- dialog: the one place elevation is earned ----
+      // The mask re-declares the local ramp instead of inheriting it from
+      // `.dsh-arch-root`. The dialog renders inside the root today, but a mask
+      // is the one thing a future DSH refactor is likely to move into a portal,
+      // and inheriting would then silently strip every colour below.
+      '.dsh-arch-mask{--arch-ease:cubic-bezier(.2,0,0,1);--arch-dur:140ms;--arch-hover:var(--dsw-alias-interactive-bg-hover);--arch-press:var(--dsw-alias-interactive-bg-active);--arch-line:var(--dsw-alias-border-l1);--arch-edge:var(--dsw-alias-border-l2);--arch-fg1:var(--dsw-alias-label-primary);--arch-fg2:var(--dsw-alias-label-secondary);--arch-fg3:var(--dsw-alias-label-secondary);--arch-danger:var(--dsw-alias-state-error-primary);position:fixed;inset:0;z-index:1100;display:grid;place-items:center;padding:24px;background:var(--dsw-alias-bg-mask-1);animation:dsh-arch-fade 160ms var(--arch-ease)}',
+      '.dsh-arch-dialog{box-sizing:border-box;width:min(400px,100%);border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-1);border:1px solid var(--arch-line);box-shadow:var(--dsw-shadow-lv3);padding:20px;display:flex;flex-direction:column;gap:14px;animation:dsh-arch-pop 180ms var(--arch-ease)}',
+      '.dsh-arch-dialog-head{display:flex;align-items:center;gap:10px}',
+      '.dsh-arch-dialog-icon{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--arch-danger) 10%,transparent);color:var(--arch-danger)}',
+      '.dsh-arch-dialog-title{font-size:15px;line-height:22px;font-weight:600;letter-spacing:-.01em}',
+      '.dsh-arch-dialog-desc{font-size:13px;line-height:21px;color:var(--arch-fg2)}',
+      '.dsh-arch-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:2px}',
+      '.dsh-arch-dialog-actions .dsh-arch-btn{height:32px;padding:0 14px;font-size:13px}',
+      '.dsh-arch-dialog-actions .dsh-arch-btn:not([data-variant="danger"]){border-color:var(--arch-edge);color:var(--arch-fg1)}',
+      '.dsh-arch-dialog-actions .dsh-arch-btn:not([data-variant="danger"]):hover:not(:disabled){background:var(--arch-hover)}',
+      // Destructive confirm: red label on the dialog surface, outlined in red.
+      //
+      // Two fills were measured and rejected. White on solid red fails in dark
+      // mode (theme error red is light there: 3.37:1). Red on a translucent red
+      // wash fails in light mode instead (the wash darkens the backdrop under
+      // the label: 3.41:1). Leaving the surface alone keeps the label on the
+      // dialog colour, which measures 4.5:1 light and 4.65:1 dark, and the
+      // semibold 13px weight pushes it past the large-text threshold as well.
+      '.dsh-arch-dialog-actions .dsh-arch-btn[data-variant="danger"]{background:transparent;border-color:color-mix(in srgb,var(--arch-danger) 50%,transparent);color:var(--arch-danger);font-weight:600}',
+      '.dsh-arch-dialog-actions .dsh-arch-btn[data-variant="danger"]:hover:not(:disabled){background:color-mix(in srgb,var(--arch-danger) 10%,transparent);color:var(--arch-danger)}',
+      '@keyframes dsh-arch-fade{from{opacity:0}to{opacity:1}}',
+      '@keyframes dsh-arch-pop{from{opacity:0;transform:translateY(4px) scale(.985)}to{opacity:1;transform:none}}',
+
+      // ---- reduced motion ----
+      '@media (prefers-reduced-motion:reduce){.dsh-arch-mask,.dsh-arch-dialog{animation:none}.dsh-arch-btn,.dsh-arch-icon-btn,.dsh-arch-row{transition:none}.dsh-arch-btn:active,.dsh-arch-icon-btn:active{transform:none}}',
     ].join('\n')
 
     /* ---- icons: 16px stroke glyphs inheriting currentColor ---- */
@@ -362,8 +429,14 @@ window.__ModuleLoader__.load({
     function ConfirmDialog(props) {
       const { title, description, cancelLabel, confirmLabel, workingLabel, pending, onCancel, onConfirm } = props
       const confirm = useRef(null)
+      // Return focus to whatever opened the dialog, so a keyboard user is not
+      // dropped back at the top of the settings page after a cancel.
       useEffect(() => {
+        const opener = typeof document === 'undefined' ? null : document.activeElement
         confirm.current?.focus()
+        return () => {
+          if (opener !== null && typeof opener.focus === 'function' && opener.isConnected) opener.focus()
+        }
       }, [])
       useEffect(() => {
         const onKey = (event) => {
@@ -385,9 +458,13 @@ window.__ModuleLoader__.load({
         role: 'alertdialog',
         'aria-modal': 'true',
         'aria-label': title,
+        'aria-describedby': 'dsh-arch-dialog-desc',
       }, [
-        h('div', { className: 'dsh-arch-dialog-head', key: 'head' }, [h(AlertIcon, { key: 'i' }), h('span', { className: 'dsh-arch-dialog-title', key: 't' }, title)]),
-        h('div', { className: 'dsh-arch-dialog-desc', key: 'desc' }, description),
+        h('div', { className: 'dsh-arch-dialog-head', key: 'head' }, [
+          h('span', { className: 'dsh-arch-dialog-icon', key: 'i' }, h(AlertIcon, {})),
+          h('span', { className: 'dsh-arch-dialog-title', key: 't' }, title),
+        ]),
+        h('div', { className: 'dsh-arch-dialog-desc', id: 'dsh-arch-dialog-desc', key: 'desc' }, description),
         h('div', { className: 'dsh-arch-dialog-actions', key: 'actions' }, [
           h(Btn, { key: 'cancel', ref: confirm, disabled: pending, onClick: onCancel }, cancelLabel),
           h(Btn, { key: 'ok', variant: 'danger', disabled: pending, onClick: onConfirm }, pending ? workingLabel : confirmLabel),
@@ -652,16 +729,27 @@ window.__ModuleLoader__.load({
         ]),
         status,
         model.sessions === 0
-          ? h('div', { className: 'dsh-arch-empty', key: 'empty' }, [h(ArchiveIcon, { key: 'i' }), h('span', { key: 't' }, t('empty'))])
+          ? h('div', { className: 'dsh-arch-empty', key: 'empty' }, [
+            h(ArchiveIcon, { key: 'i' }),
+            h('span', { className: 'dsh-arch-empty-title', key: 't' }, t('empty')),
+          ])
           : h('div', { className: 'dsh-arch-groups', key: 'groups' }, model.groups.map((group) => h('div', { className: 'dsh-arch-group', key: group.key }, [
             h('div', { className: 'dsh-arch-group-head', key: 'head' }, [
               h('span', { className: 'dsh-arch-group-icon', key: 'icon' }, h(group.orphaned ? ArchiveIcon : FolderIcon, {})),
-              h('span', { className: 'dsh-arch-group-name', key: 'name', title: group.path }, group.orphaned ? t('orphaned') : (group.title || group.path)),
-              group.orphaned
-                ? null
-                : h('span', { className: 'dsh-arch-group-meta', key: 'meta' },
-                  [group.path, formatDate(group.createdAt) === '' ? '' : t('created', { time: formatDate(group.createdAt) })].filter(Boolean).join(' · ')),
-              h('span', { className: 'dsh-arch-badge', key: 'count', title: t('sessions', { count: group.rows.length }) }, String(group.rows.length)),
+              h('div', { className: 'dsh-arch-group-text', key: 'text' }, [
+                h('div', { className: 'dsh-arch-group-titlerow', key: 'title' }, [
+                  h('span', { className: 'dsh-arch-group-name', key: 'name', title: group.path }, group.orphaned ? t('orphaned') : (group.title || group.path)),
+                  h('span', { className: 'dsh-arch-count', key: 'count', title: t('sessions', { count: group.rows.length }) }, String(group.rows.length)),
+                ]),
+                group.orphaned || group.path === ''
+                  ? null
+                  : h('div', { className: 'dsh-arch-group-subrow', key: 'sub' }, [
+                    h('span', { className: 'dsh-arch-group-path', key: 'path', title: group.path }, group.path),
+                    formatDate(group.createdAt) === ''
+                      ? null
+                      : h('span', { className: 'dsh-arch-group-date', key: 'date' }, t('created', { time: formatDate(group.createdAt) })),
+                  ]),
+              ]),
             ]),
             ...group.rows.map((row) => h('div', { className: 'dsh-arch-row', key: row.sessionId }, [
               h('div', { className: 'dsh-arch-row-main', key: 'main' }, [
