@@ -1,0 +1,3 @@
+- insert:
+    - id: archived-sessions
+      name: '@local/dsh-archived-sessions'
