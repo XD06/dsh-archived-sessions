@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-archived-sessions",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "type": "module",
   "description": "Archived sessions manager in Settings: grouped by workspace, unarchive or purge.",

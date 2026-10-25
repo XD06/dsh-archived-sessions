@@ -130,26 +130,20 @@ window.__ModuleLoader__.load({
       '.dsh-arch-btn:disabled{opacity:.4;cursor:default}',
       '.dsh-arch-btn[data-variant="danger"]:hover:not(:disabled){background:color-mix(in srgb,var(--arch-danger) 8%,transparent);color:var(--arch-danger)}',
 
-      // ---- groups: section label + card, like the preset page ----
+      // ---- groups: one card per workspace, header band on top ----
       //
-      // Hierarchy: the session is the content, the workspace is only the bucket
-      // it sits in. So the workspace label stays secondary (5.8:1) and earns its
-      // "label" reading from uppercase + tracking + 600, never from being darker
-      // than the rows.
-      '.dsh-arch-groups{display:flex;flex-direction:column;gap:16px;margin-top:8px}',
-      // The WORKSPACE is the container, so it carries the tint and the sessions
-      // sit on the plain raised surface inside it. Tinting the card instead put
-      // the content deeper than its own container, which read backwards.
-      //
-      // The tint is black at 5%, not a label-primary mix. A label-primary mix
-      // flips direction between themes (it is dark in light mode, light in dark
-      // mode), so in dark mode the container ended up LIGHTER than the cards it
-      // holds. Black darkens in both themes, so the container always sinks and
-      // the sessions always sit above it.
-      '.dsh-arch-group{--arch-group-tint:5%;display:flex;flex-direction:column;gap:0;padding:10px;border:1px solid var(--arch-edge);border-radius:var(--dsw-radius-lg);background:color-mix(in srgb,#000 var(--arch-group-tint),var(--dsw-alias-bg-layer-1))}',
-      '.dsh-arch-group-head{display:flex;align-items:flex-start;gap:7px;margin:0;padding:0 2px 8px;min-width:0}',
+      // Structure: card (white surface) > header band (tinted) + rows (white).
+      // The band is what separates the workspace from its sessions, so the
+      // sessions keep the plain surface and the container never looks deeper
+      // than the content it holds.
+      '.dsh-arch-groups{display:flex;flex-direction:column;gap:12px;margin-top:8px}',
+      '.dsh-arch-card{--arch-band-tint:5%;border:1px solid var(--arch-edge);border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-1);overflow:hidden}',
+      // Black at 5% darkens in both themes. A label-primary mix would flip:
+      // it is dark in light mode and light in dark mode, so the band would end
+      // up brighter than the rows in dark mode.
+      '.dsh-arch-card-head{display:flex;align-items:flex-start;gap:8px;margin:0;padding:9px 14px;border-bottom:1px solid var(--arch-edge);background:color-mix(in srgb,#000 var(--arch-band-tint),var(--dsw-alias-bg-layer-1))}',
       '.dsh-arch-group-icon{flex:none;display:grid;place-items:center;width:16px;height:17px;margin-top:1px;color:var(--arch-fg2)}',
-      '.dsh-arch-group-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}',
+      '.dsh-arch-group-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}',
       '.dsh-arch-group-titlerow{display:flex;align-items:baseline;gap:7px;min-width:0}',
       '.dsh-arch-group-name{flex:none;max-width:62%;font-size:11px;line-height:16px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--arch-fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.dsh-arch-count{flex:none;color:var(--arch-fg2);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
@@ -157,12 +151,10 @@ window.__ModuleLoader__.load({
       // Full opacity secondary. The old `.8` and `.65` fades pushed these under AA.
       '.dsh-arch-group-path{flex:1 1 auto;min-width:0;font-family:' + MONO + ';font-weight:400;font-size:11px;line-height:16px;color:var(--arch-fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.dsh-arch-group-date{flex:none;font-weight:400;color:var(--arch-fg2);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
-      // Sessions ride the raised surface: brighter than the workspace in light
-      // mode, the standard elevated layer in dark mode.
-      '.dsh-arch-card{border:1px solid var(--arch-line);border-radius:var(--dsw-radius-md);background:var(--dsw-alias-bg-layer-1);overflow:hidden}',
+      '.dsh-arch-rows{display:flex;flex-direction:column;background:var(--dsw-alias-bg-layer-1)}',
 
       // ---- rows ----
-      '.dsh-arch-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-top:1px solid var(--arch-edge);transition:background var(--arch-dur) var(--arch-ease)}',
+      '.dsh-arch-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--arch-edge);transition:background var(--arch-dur) var(--arch-ease)}',
       '.dsh-arch-row:first-child{border-top:none}',
       '.dsh-arch-row:hover{background:var(--arch-hover)}',
       '.dsh-arch-row-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}',
@@ -764,8 +756,11 @@ window.__ModuleLoader__.load({
             h(ArchiveIcon, { key: 'i' }),
             h('span', { className: 'dsh-arch-empty-title', key: 't' }, t('empty')),
           ])
-          : h('div', { className: 'dsh-arch-groups', key: 'groups' }, model.groups.map((group) => h('div', { className: 'dsh-arch-group', key: group.key }, [
-            h('h3', { className: 'dsh-arch-group-head', key: 'head' }, [
+          : h('div', { className: 'dsh-arch-groups', key: 'groups' }, model.groups.map((group) => h('div', { className: 'dsh-arch-card', key: group.key }, [
+            // The workspace heading is the card's header band, not a label
+            // floating above it. One card per workspace, header band on top,
+            // session rows below on the plain surface.
+            h('h3', { className: 'dsh-arch-card-head', key: 'head' }, [
               h('span', { className: 'dsh-arch-group-icon', key: 'icon' }, h(group.orphaned ? ArchiveIcon : FolderIcon, {})),
               h('div', { className: 'dsh-arch-group-text', key: 'text' }, [
                 h('div', { className: 'dsh-arch-group-titlerow', key: 'title' }, [
@@ -782,7 +777,7 @@ window.__ModuleLoader__.load({
                   ]),
               ]),
             ]),
-            h('div', { className: 'dsh-arch-card', key: 'card' }, group.rows.map((row) => h('div', { className: 'dsh-arch-row', key: row.sessionId }, [
+            h('div', { className: 'dsh-arch-rows', key: 'rows' }, group.rows.map((row) => h('div', { className: 'dsh-arch-row', key: row.sessionId }, [
               h('div', { className: 'dsh-arch-row-main', key: 'main' }, [
                 h('div', { className: 'dsh-arch-title', 'data-missing': row.missing ? 'true' : undefined, key: 'title' }, [
                   h('span', { className: 'dsh-arch-title-text', key: 'text', title: row.title || row.sessionId },
