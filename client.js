@@ -130,32 +130,36 @@ window.__ModuleLoader__.load({
       '.dsh-arch-btn:disabled{opacity:.4;cursor:default}',
       '.dsh-arch-btn[data-variant="danger"]:hover:not(:disabled){background:color-mix(in srgb,var(--arch-danger) 8%,transparent);color:var(--arch-danger)}',
 
-      // ---- groups: one card per workspace, header band on top ----
+      // ---- groups: one card per workspace ----
       //
-      // Structure: card (white surface) > header band (tinted) + rows (white).
-      // The band is what separates the workspace from its sessions, so the
-      // sessions keep the plain surface and the container never looks deeper
-      // than the content it holds.
+      // Header recipe: a tinted rounded tile holding the glyph, a bold title at
+      // body size, and one quiet meta line under it. That is what makes the head
+      // read as a summary block rather than a table header.
       '.dsh-arch-groups{display:flex;flex-direction:column;gap:12px;margin-top:8px}',
       '.dsh-arch-card{--arch-band-tint:5%;border:1px solid var(--arch-edge);border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-1);overflow:hidden}',
       // Black at 5% darkens in both themes. A label-primary mix would flip:
       // it is dark in light mode and light in dark mode, so the band would end
       // up brighter than the rows in dark mode.
-      '.dsh-arch-card-head{display:flex;align-items:flex-start;gap:8px;margin:0;padding:9px 14px;border-bottom:1px solid var(--arch-edge);background:color-mix(in srgb,#000 var(--arch-band-tint),var(--dsw-alias-bg-layer-1))}',
-      '.dsh-arch-group-icon{flex:none;display:grid;place-items:center;width:16px;height:17px;margin-top:1px;color:var(--arch-fg2)}',
-      '.dsh-arch-group-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}',
-      '.dsh-arch-group-titlerow{display:flex;align-items:baseline;gap:7px;min-width:0}',
-      '.dsh-arch-group-name{flex:none;max-width:62%;font-size:11px;line-height:16px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--arch-fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsh-arch-count{flex:none;color:var(--arch-fg2);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
+      '.dsh-arch-card-head{display:flex;align-items:center;gap:11px;margin:0;padding:11px 14px;border-bottom:1px solid var(--arch-edge);background:color-mix(in srgb,#000 var(--arch-band-tint),var(--dsw-alias-bg-layer-1))}',
+      // The tile: raised off the tinted band so the glyph sits on its own surface.
+      '.dsh-arch-group-icon{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:var(--dsw-radius-sm);background:var(--dsw-alias-bg-layer-1);border:1px solid var(--arch-line);color:var(--arch-fg2)}',
+      '.dsh-arch-group-icon svg{width:15px;height:15px}',
+      '.dsh-arch-group-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}',
+      '.dsh-arch-group-titlerow{display:flex;align-items:baseline;gap:8px;min-width:0}',
+      // Sentence case at body size: this is a title, not a column heading.
+      '.dsh-arch-group-name{flex:none;max-width:70%;font-size:13px;line-height:19px;font-weight:600;color:var(--arch-fg1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-count{flex:none;color:var(--arch-fg2);font-size:12px;line-height:19px;font-variant-numeric:tabular-nums}',
       '.dsh-arch-group-subrow{display:flex;align-items:baseline;gap:10px;min-width:0}',
       // Full opacity secondary. The old `.8` and `.65` fades pushed these under AA.
       '.dsh-arch-group-path{flex:1 1 auto;min-width:0;font-family:' + MONO + ';font-weight:400;font-size:11px;line-height:16px;color:var(--arch-fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.dsh-arch-group-date{flex:none;font-weight:400;color:var(--arch-fg2);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
-      '.dsh-arch-rows{display:flex;flex-direction:column;background:var(--dsw-alias-bg-layer-1)}',
+      '.dsh-arch-rows{display:flex;flex-direction:column;background:var(--dsw-alias-bg-layer-1);padding:2px 0}',
 
       // ---- rows ----
-      '.dsh-arch-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--arch-edge);transition:background var(--arch-dur) var(--arch-ease)}',
-      '.dsh-arch-row:first-child{border-top:none}',
+      // Rows are separated by space, not by rules. A line under every row turns
+      // a short list into a table; the reference keeps the list airy and lets
+      // hover carry the pointer affordance.
+      '.dsh-arch-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-top:none;transition:background var(--arch-dur) var(--arch-ease)}',
       '.dsh-arch-row:hover{background:var(--arch-hover)}',
       '.dsh-arch-row-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}',
       '.dsh-arch-title{display:flex;align-items:baseline;gap:8px;min-width:0}',
@@ -765,7 +769,7 @@ window.__ModuleLoader__.load({
               h('div', { className: 'dsh-arch-group-text', key: 'text' }, [
                 h('div', { className: 'dsh-arch-group-titlerow', key: 'title' }, [
                   h('span', { className: 'dsh-arch-group-name', key: 'name', title: group.path }, group.orphaned ? t('orphaned') : (group.title || group.path)),
-                  h('span', { className: 'dsh-arch-count', key: 'count', title: t('sessions', { count: group.rows.length }) }, String(group.rows.length)),
+                  h('span', { className: 'dsh-arch-count', key: 'count', title: t('sessions', { count: group.rows.length }) }, t('sessions', { count: group.rows.length })),
                 ]),
                 group.orphaned || group.path === ''
                   ? null
