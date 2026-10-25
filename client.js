@@ -105,14 +105,17 @@ window.__ModuleLoader__.load({
     const MONO = 'var(--dsw-font-markdown-code-font-family,var(--ds-font-family-code,ui-monospace,SFMono-Regular,Menlo,monospace))'
     const CSS = [
       // ---- scope: one place that defines the local ramp ----
-      '.dsh-arch-root{--arch-ease:cubic-bezier(.2,0,0,1);--arch-dur:140ms;--arch-hover:var(--dsw-alias-interactive-bg-hover);--arch-press:var(--dsw-alias-interactive-bg-active);--arch-line:var(--dsw-alias-border-l1);--arch-edge:var(--dsw-alias-border-l2);--arch-fg1:var(--dsw-alias-label-primary);--arch-fg2:var(--dsw-alias-label-secondary);--arch-fg3:var(--dsw-alias-label-secondary);--arch-danger:var(--dsw-alias-state-error-primary);display:flex;flex-direction:column;gap:18px;padding:4px 0 8px;color:var(--arch-fg1);font-size:13px;line-height:20px;-webkit-font-smoothing:antialiased}',
+      '.dsh-arch-root{--arch-ease:cubic-bezier(.2,0,0,1);--arch-dur:140ms;--arch-hover:var(--dsw-alias-interactive-bg-hover);--arch-press:var(--dsw-alias-interactive-bg-active);--arch-line:var(--dsw-alias-border-l1);--arch-edge:var(--dsw-alias-border-l2);--arch-fg1:var(--dsw-alias-label-primary);--arch-fg2:var(--dsw-alias-label-secondary);--arch-fg3:var(--dsw-alias-label-secondary);--arch-danger:var(--dsw-alias-state-error-primary);display:flex;flex-direction:column;gap:16px;padding:4px 0 8px;max-width:720px;color:var(--arch-fg1);font-size:13px;line-height:20px;-webkit-font-smoothing:antialiased}',
 
-      // ---- hint ----
-      '.dsh-arch-hint{display:flex;align-items:flex-start;gap:7px;color:var(--arch-fg3);font-size:12px;line-height:18px}',
-      '.dsh-arch-hint svg{flex:none;margin-top:2px;opacity:.8}',
+      // ---- page header (mirrors the Agent Presets settings page) ----
+      '.dsh-arch-header{display:flex;flex-direction:column;gap:6px;max-width:720px}',
+      '.dsh-arch-title-page{margin:0;font-size:18px;line-height:26px;font-weight:600;letter-spacing:-.01em;color:var(--arch-fg1)}',
+      // The presets page uses label-tertiary here; measured at 3.71:1 on white
+      // that misses AA for 13px text, so this intro uses the secondary step.
+      '.dsh-arch-intro{margin:0;font-size:13px;line-height:20px;color:var(--arch-fg2)}',
 
       // ---- summary bar ----
-      '.dsh-arch-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:28px}',
+      '.dsh-arch-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:28px;margin-top:4px}',
       '.dsh-arch-stats{display:flex;align-items:center;gap:16px;color:var(--arch-fg3);font-size:12px;line-height:18px}',
       '.dsh-arch-stat{display:inline-flex;align-items:center;gap:6px}',
       '.dsh-arch-stat svg{opacity:.55}',
@@ -127,18 +130,22 @@ window.__ModuleLoader__.load({
       '.dsh-arch-btn:disabled{opacity:.4;cursor:default}',
       '.dsh-arch-btn[data-variant="danger"]:hover:not(:disabled){background:color-mix(in srgb,var(--arch-danger) 8%,transparent);color:var(--arch-danger)}',
 
-      // ---- group card: real border + real shadow ----
-      '.dsh-arch-groups{display:flex;flex-direction:column;gap:12px}',
-      '.dsh-arch-group{border:1px solid var(--arch-edge);border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-1);box-shadow:var(--dsw-shadow-lv1);overflow:hidden}',
-      '.dsh-arch-group-head{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--arch-hover);border-bottom:1px solid var(--arch-line)}',
-      '.dsh-arch-group-icon{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:var(--dsw-radius-xs);background:var(--dsw-alias-bg-layer-1);border:1px solid var(--arch-line);color:var(--arch-fg3)}',
-      '.dsh-arch-group-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}',
-      '.dsh-arch-group-titlerow{display:flex;align-items:center;gap:8px;min-width:0}',
-      '.dsh-arch-group-name{flex:1 1 auto;min-width:0;font-size:13px;font-weight:600;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsh-arch-count{flex:none;color:var(--arch-fg3);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
-      '.dsh-arch-group-subrow{display:flex;align-items:center;gap:8px;min-width:0}',
-      '.dsh-arch-group-path{flex:1 1 auto;min-width:0;font-family:' + MONO + ';font-size:11px;line-height:16px;color:var(--arch-fg3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsh-arch-group-date{flex:none;color:var(--arch-fg3);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
+      // ---- groups: section label + card, like the preset page ----
+      '.dsh-arch-groups{display:flex;flex-direction:column;gap:18px;margin-top:6px}',
+      '.dsh-arch-group{display:flex;flex-direction:column;gap:8px}',
+      // Group head is a section label, not a card header: it sits outside the
+      // surface so the card below reads as content belonging to it.
+      '.dsh-arch-group-head{display:flex;align-items:flex-start;gap:7px;margin:0;padding:0 2px 2px;min-width:0}',
+      '.dsh-arch-group-icon{flex:none;display:grid;place-items:center;width:16px;height:17px;color:var(--arch-fg3);opacity:.85}',
+      '.dsh-arch-group-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}',
+      '.dsh-arch-group-titlerow{display:flex;align-items:baseline;gap:7px;min-width:0}',
+      '.dsh-arch-group-name{flex:none;max-width:62%;font-size:11px;line-height:17px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--arch-fg3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-count{flex:none;color:var(--arch-fg3);font-size:11px;line-height:17px;font-variant-numeric:tabular-nums;opacity:.65}',
+      '.dsh-arch-group-subrow{display:flex;align-items:baseline;gap:10px;min-width:0}',
+      '.dsh-arch-group-path{flex:1 1 auto;min-width:0;font-family:' + MONO + ';font-weight:400;font-size:11px;line-height:16px;color:var(--arch-fg3);opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-group-date{flex:none;font-weight:400;color:var(--arch-fg3);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums;opacity:.8}',
+      // The card: one surface per workspace, same recipe as a preset card.
+      '.dsh-arch-card{border:1px solid var(--arch-edge);border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-1);box-shadow:var(--dsw-shadow-lv1);overflow:hidden}',
 
       // ---- rows ----
       '.dsh-arch-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--arch-line);transition:background var(--arch-dur) var(--arch-ease)}',
@@ -151,7 +158,7 @@ window.__ModuleLoader__.load({
       // Session id: tertiary at 11px with the old `.65` opacity measured 2.18:1
       // on white, well under AA. `label-secondary` at full opacity clears it in
       // both themes (5.8:1 light, 6.9:1 dark) and the mono face keeps it quiet.
-      '.dsh-arch-id{font-family:' + MONO + ';font-size:11px;line-height:16px;color:var(--arch-fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-id{font-family:' + MONO + ';font-weight:400;font-size:11px;line-height:16px;color:var(--arch-fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
 
       // ---- icon buttons: no resting outline, they gain contrast on intent ----
       '.dsh-arch-row-actions{flex:none;display:flex;align-items:center;gap:2px}',
@@ -714,7 +721,14 @@ window.__ModuleLoader__.load({
           : null
 
       return h('section', { className: 'dsh-arch-root', 'aria-label': t('nav'), 'aria-busy': busy ? 'true' : undefined }, [
-        h('div', { className: 'dsh-arch-hint', key: 'hint' }, [h(InfoIcon, { key: 'i' }), h('span', { key: 't' }, t('intro'))]),
+        // Page header, matching the Agent Presets settings page: an h2 title and
+        // a one-line intro. Settings pages in DSH all open this way, and the
+        // panel previously started straight at the hint, which read as a widget
+        // dropped into the page rather than a page of its own.
+        h('header', { className: 'dsh-arch-header', key: 'header' }, [
+          h('h2', { className: 'dsh-arch-title-page', key: 'h2' }, t('nav')),
+          h('p', { className: 'dsh-arch-intro', key: 'intro' }, t('intro')),
+        ]),
         h('div', { className: 'dsh-arch-bar', key: 'bar' }, [
           h('div', { className: 'dsh-arch-stats', key: 'stats' }, [
             h('span', { className: 'dsh-arch-stat', key: 'sessions' }, [h(SessionIcon, { key: 'i' }), h('span', { key: 't' }, t('sessions', { count: model.sessions }))]),
@@ -734,7 +748,7 @@ window.__ModuleLoader__.load({
             h('span', { className: 'dsh-arch-empty-title', key: 't' }, t('empty')),
           ])
           : h('div', { className: 'dsh-arch-groups', key: 'groups' }, model.groups.map((group) => h('div', { className: 'dsh-arch-group', key: group.key }, [
-            h('div', { className: 'dsh-arch-group-head', key: 'head' }, [
+            h('h3', { className: 'dsh-arch-group-head', key: 'head' }, [
               h('span', { className: 'dsh-arch-group-icon', key: 'icon' }, h(group.orphaned ? ArchiveIcon : FolderIcon, {})),
               h('div', { className: 'dsh-arch-group-text', key: 'text' }, [
                 h('div', { className: 'dsh-arch-group-titlerow', key: 'title' }, [
@@ -751,7 +765,7 @@ window.__ModuleLoader__.load({
                   ]),
               ]),
             ]),
-            ...group.rows.map((row) => h('div', { className: 'dsh-arch-row', key: row.sessionId }, [
+            h('div', { className: 'dsh-arch-card', key: 'card' }, group.rows.map((row) => h('div', { className: 'dsh-arch-row', key: row.sessionId }, [
               h('div', { className: 'dsh-arch-row-main', key: 'main' }, [
                 h('div', { className: 'dsh-arch-title', 'data-missing': row.missing ? 'true' : undefined, key: 'title' }, [
                   h('span', { className: 'dsh-arch-title-text', key: 'text', title: row.title || row.sessionId },
@@ -777,7 +791,7 @@ window.__ModuleLoader__.load({
                   onClick: () => requestPurge(row),
                 }, h(TrashIcon, {})),
               ]),
-            ])),
+            ]))),
           ]))),
         confirm === null
           ? null
