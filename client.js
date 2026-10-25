@@ -131,30 +131,47 @@ window.__ModuleLoader__.load({
       '.dsh-arch-btn[data-variant="danger"]:hover:not(:disabled){background:color-mix(in srgb,var(--arch-danger) 8%,transparent);color:var(--arch-danger)}',
 
       // ---- groups: section label + card, like the preset page ----
-      '.dsh-arch-groups{display:flex;flex-direction:column;gap:18px;margin-top:6px}',
-      '.dsh-arch-group{display:flex;flex-direction:column;gap:8px}',
-      // Group head is a section label, not a card header: it sits outside the
-      // surface so the card below reads as content belonging to it.
-      '.dsh-arch-group-head{display:flex;align-items:flex-start;gap:7px;margin:0;padding:0 2px 2px;min-width:0}',
-      '.dsh-arch-group-icon{flex:none;display:grid;place-items:center;width:16px;height:17px;color:var(--arch-fg3);opacity:.85}',
-      '.dsh-arch-group-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}',
+      //
+      // Hierarchy: the session is the content, the workspace is only the bucket
+      // it sits in. So the workspace label stays secondary (5.8:1) and earns its
+      // "label" reading from uppercase + tracking + 600, never from being darker
+      // than the rows.
+      '.dsh-arch-groups{display:flex;flex-direction:column;gap:16px;margin-top:8px}',
+      // The WORKSPACE is the container, so it carries the tint and the sessions
+      // sit on the plain raised surface inside it. Tinting the card instead put
+      // the content deeper than its own container, which read backwards.
+      //
+      // The tint is black at 5%, not a label-primary mix. A label-primary mix
+      // flips direction between themes (it is dark in light mode, light in dark
+      // mode), so in dark mode the container ended up LIGHTER than the cards it
+      // holds. Black darkens in both themes, so the container always sinks and
+      // the sessions always sit above it.
+      '.dsh-arch-group{--arch-group-tint:5%;display:flex;flex-direction:column;gap:0;padding:10px;border:1px solid var(--arch-edge);border-radius:var(--dsw-radius-lg);background:color-mix(in srgb,#000 var(--arch-group-tint),var(--dsw-alias-bg-layer-1))}',
+      '.dsh-arch-group-head{display:flex;align-items:flex-start;gap:7px;margin:0;padding:0 2px 8px;min-width:0}',
+      '.dsh-arch-group-icon{flex:none;display:grid;place-items:center;width:16px;height:17px;margin-top:1px;color:var(--arch-fg2)}',
+      '.dsh-arch-group-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}',
       '.dsh-arch-group-titlerow{display:flex;align-items:baseline;gap:7px;min-width:0}',
-      '.dsh-arch-group-name{flex:none;max-width:62%;font-size:11px;line-height:17px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--arch-fg3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsh-arch-count{flex:none;color:var(--arch-fg3);font-size:11px;line-height:17px;font-variant-numeric:tabular-nums;opacity:.65}',
+      '.dsh-arch-group-name{flex:none;max-width:62%;font-size:11px;line-height:16px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--arch-fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-count{flex:none;color:var(--arch-fg2);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
       '.dsh-arch-group-subrow{display:flex;align-items:baseline;gap:10px;min-width:0}',
-      '.dsh-arch-group-path{flex:1 1 auto;min-width:0;font-family:' + MONO + ';font-weight:400;font-size:11px;line-height:16px;color:var(--arch-fg3);opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsh-arch-group-date{flex:none;font-weight:400;color:var(--arch-fg3);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums;opacity:.8}',
-      // The card: one surface per workspace, same recipe as a preset card.
-      '.dsh-arch-card{border:1px solid var(--arch-edge);border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-layer-1);box-shadow:var(--dsw-shadow-lv1);overflow:hidden}',
+      // Full opacity secondary. The old `.8` and `.65` fades pushed these under AA.
+      '.dsh-arch-group-path{flex:1 1 auto;min-width:0;font-family:' + MONO + ';font-weight:400;font-size:11px;line-height:16px;color:var(--arch-fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-group-date{flex:none;font-weight:400;color:var(--arch-fg2);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
+      // Sessions ride the raised surface: brighter than the workspace in light
+      // mode, the standard elevated layer in dark mode.
+      '.dsh-arch-card{border:1px solid var(--arch-line);border-radius:var(--dsw-radius-md);background:var(--dsw-alias-bg-layer-1);overflow:hidden}',
 
       // ---- rows ----
-      '.dsh-arch-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--arch-line);transition:background var(--arch-dur) var(--arch-ease)}',
+      '.dsh-arch-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-top:1px solid var(--arch-edge);transition:background var(--arch-dur) var(--arch-ease)}',
+      '.dsh-arch-row:first-child{border-top:none}',
       '.dsh-arch-row:hover{background:var(--arch-hover)}',
       '.dsh-arch-row-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}',
       '.dsh-arch-title{display:flex;align-items:baseline;gap:8px;min-width:0}',
-      '.dsh-arch-title-text{font-size:13px;line-height:18px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsh-arch-title[data-missing="true"] .dsh-arch-title-text{color:var(--arch-fg3);font-weight:400}',
-      '.dsh-arch-time{flex:none;color:var(--arch-fg3);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
+      // The session title is the one thing in the card that is content, so it
+      // carries the strongest weight on the page below the h2.
+      '.dsh-arch-title-text{font-size:13px;line-height:18px;font-weight:600;color:var(--arch-fg1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.dsh-arch-title[data-missing="true"] .dsh-arch-title-text{color:var(--arch-fg2);font-weight:400}',
+      '.dsh-arch-time{flex:none;color:var(--arch-fg2);font-size:11px;line-height:16px;font-variant-numeric:tabular-nums}',
       // Session id: tertiary at 11px with the old `.65` opacity measured 2.18:1
       // on white, well under AA. `label-secondary` at full opacity clears it in
       // both themes (5.8:1 light, 6.9:1 dark) and the mono face keeps it quiet.
